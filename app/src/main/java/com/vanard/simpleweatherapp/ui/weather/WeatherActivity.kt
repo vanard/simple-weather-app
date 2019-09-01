@@ -3,7 +3,7 @@ package com.vanard.simpleweatherapp.ui.weather
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.widget.Toast
+import android.util.Log.d
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
+import com.squareup.picasso.Picasso
 import com.vanard.simpleweatherapp.R
 import com.vanard.simpleweatherapp.data.model.CurrentWeather
 import com.vanard.simpleweatherapp.data.model.FutureWeather
@@ -32,20 +33,6 @@ private const val MY_PERMISSION_ACCESS_COARSE_LOCATION = 1
 class WeatherActivity : AppCompatActivity(), KodeinAware, WeatherContract.View {
 
     private lateinit var presenter: WeatherPresenter
-
-    override fun setDataWeather(currentWeather: CurrentWeather) {
-        location_text.text = currentWeather.location.name
-        condition_text.text = currentWeather.currentWeatherEntry.condition.text
-        suhu_text.text = currentWeather.currentWeatherEntry.tempC.roundToInt().toString() + 0x00B0.toChar()
-        refresh_layout.isRefreshing = false
-    }
-
-    override fun setDataListWeather(weatherList: FutureWeather) {
-        mWeatherList.addAll(weatherList.futureWeatherEntries.entries)
-        mWeatherAdapter.notifyDataSetChanged()
-        refresh_layout.isRefreshing = false
-    }
-
     override val kodein by closestKodein()
 
     private lateinit var mWeatherAdapter: WeatherAdapter
@@ -59,10 +46,25 @@ class WeatherActivity : AppCompatActivity(), KodeinAware, WeatherContract.View {
         }
     }
 
+    override fun setDataWeather(currentWeather: CurrentWeather) {
+        val s = currentWeather.currentWeatherEntry.condition.icon
+        Picasso.get().load("https://${s.substring(2, s.length)}").into(condition_icon)
+        location_text.text = currentWeather.location.name
+        condition_text.text = currentWeather.currentWeatherEntry.condition.text
+        suhu_text.text = currentWeather.currentWeatherEntry.tempC.roundToInt().toString() + 0x00B0.toChar()
+        refresh_layout.isRefreshing = false
+    }
+
+    override fun setDataListWeather(weatherList: FutureWeather) {
+        mWeatherList.clear()
+        mWeatherList.addAll(weatherList.futureWeatherEntries.entries)
+        mWeatherAdapter.notifyDataSetChanged()
+        refresh_layout.isRefreshing = false
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        refresh_layout.isRefreshing = true
 
         requestLocationPermission()
 
@@ -73,21 +75,26 @@ class WeatherActivity : AppCompatActivity(), KodeinAware, WeatherContract.View {
             requestLocationPermission()
 
         presenter = WeatherPresenter(this, ForecastRepositoryImpl(RetrofitClient.apiService(ConnectivityInterceptorImpl(this))))
-        SetUpLayoutManager.verticalLinearLayout(applicationContext, list_weather)
 
+        setUpView()
+        setUpData()
+    }
+
+    private fun setUpView() {
+        SetUpLayoutManager.verticalLinearLayout(applicationContext, list_weather)
         mWeatherAdapter = WeatherAdapter(mWeatherList)
         list_weather.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
         list_weather.adapter = mWeatherAdapter
-
-        refresh_layout.onRefresh {
-            presenter.getDataCurrentWeather("Jakarta")
-            presenter.getDataForecastWeather("Jakarta")
-        }
     }
 
-    override fun onResume() {
-        super.onResume()
-        refresh_layout.isRefreshing = true
+    private fun setUpData() {
+        presenter.getDataCurrentWeather("Bandung")
+        presenter.getDataForecastWeather("Bandung")
+
+        refresh_layout.onRefresh {
+            presenter.getDataCurrentWeather("Bandung")
+            presenter.getDataForecastWeather("Bandung")
+        }
     }
 
     private fun bindLocationManager() {
@@ -119,7 +126,7 @@ class WeatherActivity : AppCompatActivity(), KodeinAware, WeatherContract.View {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 bindLocationManager()
             else
-                Toast.makeText(this, "Please, set location manually in settings", Toast.LENGTH_LONG).show()
+                d("PTK", "Location must be active manually")
         }
     }
 }

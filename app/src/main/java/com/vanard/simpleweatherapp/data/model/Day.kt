@@ -1,7 +1,11 @@
 package com.vanard.simpleweatherapp.data.model
 
+import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.android.parcel.Parcelize
+import kotlinx.android.parcel.RawValue
 
+@Parcelize
 data class Day(
     @SerializedName("avgtemp_c")
     val avgtempC: Double,
@@ -11,7 +15,8 @@ data class Day(
     val avgvisKm: Double,
     @SerializedName("avgvis_miles")
     val avgvisMiles: Double,
-    val condition: Condition,
+    val humidity: Double,
+    val condition: @RawValue Condition,
     @SerializedName("maxtemp_c")
     val maxtempC: Double,
     @SerializedName("maxtemp_f")
@@ -29,4 +34,4 @@ data class Day(
     @SerializedName("totalprecip_mm")
     val totalprecipMm: Double,
     val uv: Double
-)
+): Parcelable
