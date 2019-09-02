@@ -18,6 +18,8 @@ class DetailWeatherActivity : AppCompatActivity() {
     }
 
     private fun setUpView() {
+        supportActionBar?.title = "Detail"
+
         val data = intent.getParcelableExtra<Day>("data")
         val day = intent.getStringExtra("day")
         val s = data.condition.icon

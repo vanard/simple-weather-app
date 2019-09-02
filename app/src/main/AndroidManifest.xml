@@ -15,7 +15,10 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
-        <activity android:name=".ui.detailweather.DetailWeatherActivity">
+        <activity android:name=".ui.detailweather.DetailWeatherActivity" android:theme="@style/AppTheme.Toolbar">
+            <meta-data
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value="com.vanard.simpleweatherapp.ui.weather.WeatherActivity"/>
         </activity>
         <activity android:name=".ui.weather.WeatherActivity">
             <intent-filter>
